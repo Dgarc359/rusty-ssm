@@ -8,10 +8,18 @@ async fn main() -> Result<(), Error> {
     let config = aws_config::from_env().region(region_provider).load().await;
 
     let client = Client::new(&config);
-    
-    // Im pretty sure there's a better way to do multiple parameters at once...
-    // Docs: https://docs.rs/aws-sdk-ssm/latest/aws_sdk_ssm/client/fluent_builders/struct.GetParameters.html
-    let resp = client.get_parameters().names(String::from("CHAMELEON_BOT_APP_ID")).names(String::from("CHAMELEON_BOT_TOKEN")).with_decryption(true).send().await?;
+
+    let resp = client
+        .get_parameters()
+        .set_names(Some(
+            ["CHAMELEON_BOT_APP_ID", "CHAMELEON_BOT_TOKEN"]
+                .map(String::from)
+                .to_vec()
+        ))
+        .with_decryption(true)
+        .send()
+        .await?;
+
     println!("resp: {:?}", &resp.parameters().into_iter().enumerate());
 
     Ok(())
