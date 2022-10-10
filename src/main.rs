@@ -1,13 +1,23 @@
-use aws_config::meta::region::RegionProviderChain;
+use aws_config::{meta::region::RegionProviderChain, SdkConfig};
 use aws_sdk_ssm::{Client, Error};
+
+async fn build_ssm_client() -> SsmWrapperClient {
+    let region_provider: RegionProviderChain = RegionProviderChain::default_provider().or_else("us-east-1");
+
+    let config: SdkConfig = aws_config::from_env().region(region_provider).load().await;
+
+    SsmWrapperClient {
+        client: Client::new(&config) 
+    }
+}
+
+struct SsmWrapperClient {
+    client: Client,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    let region_provider = RegionProviderChain::default_provider().or_else("us-east-1");
-
-    let config = aws_config::from_env().region(region_provider).load().await;
-
-    let client = Client::new(&config);
+    let client = build_ssm_client().await.client;
 
     let resp = client
         .get_parameters()
