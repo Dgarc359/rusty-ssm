@@ -7,19 +7,19 @@ struct SsmWrapperClient {
 
 impl SsmWrapperClient {
     async fn new() -> Self {
-            let region_provider: RegionProviderChain = RegionProviderChain::default_provider().or_else("us-east-1");
+        let region_provider: RegionProviderChain =
+            RegionProviderChain::default_provider().or_else("us-east-1");
 
         let config: SdkConfig = aws_config::from_env().region(region_provider).load().await;
 
         Self {
-            client: Client::new(&config) 
+            client: Client::new(&config),
         }
     }
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // let client = build_ssm_client().await.client;
     let client = SsmWrapperClient::new().await.client;
 
     let resp = client
@@ -27,7 +27,7 @@ async fn main() -> Result<(), Error> {
         .set_names(Some(
             ["CHAMELEON_BOT_APP_ID", "CHAMELEON_BOT_TOKEN"]
                 .map(String::from)
-                .to_vec()
+                .to_vec(),
         ))
         .with_decryption(true)
         .send()
